@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "macros.h"
+
 /**
  * Множество уровней логгирования
  */

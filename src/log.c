@@ -8,7 +8,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "macros.h"
 #include "uthash.h"
 
 #define _LOG_SRC "UNKNOWN"
