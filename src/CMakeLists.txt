@@ -16,3 +16,4 @@ else(DO_LOG_CURRENT_TIME)
 endif(DO_LOG_CURRENT_TIME)
 
 target_include_directories(cos_log PUBLIC ${PROJECT_SOURCE_DIR}/include)
+add_library(sub::cos_log ALIAS cos_log)
