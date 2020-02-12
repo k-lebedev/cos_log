@@ -86,11 +86,12 @@ log_source_hm_elt_t;
  */
 typedef struct tag_log_ctx
 {
-    log_source_hm_elt_t *source_hm;     /*!< хранилище зарегистрированнных источников лога */
+    bool                 initialized;   /*!< конекст уже инициализирован */
+    bool                 use_mutex;     /*!< флаг необходимости использования мьютекса */
     log_level_t          min_log_level; /*!< минимально выводимый уровень логов для всех источников */
     pthread_mutex_t      mutex;         /*!< мьютекс */
-    volatile bool        use_mutex;     /*!< флаг необходимости использования мьютекса */
-    volatile bool        initialized;   /*!< конекст уже инициализирован */
+    log_source_hm_elt_t *source_hm;     /*!< хранилище зарегистрированнных источников лога */
+    char                 log_buf[8192]; /*!< буфер логгирования. */
 }
 log_ctx_t;
 
@@ -111,9 +112,6 @@ struct tag_log_datetime
 
 static
 log_ctx_t log_ctx; ///< глобальный контекст системы логгирования.
-
-static
-char log_buf[8192]; ///< глобальный буфер логгирования.
 
 /**
  * mapping уровней лога в текст
@@ -674,13 +672,13 @@ void log_log(const char  *source,
         char prefix[128];
         va_list args;
 
-        snprintf(log_buf,
-                 sizeof(log_buf),
+        snprintf(log_ctx.log_buf,
+                 sizeof(log_ctx.log_buf),
                  "%s | %s\n",
                  compose_log_prefix(prefix, sizeof(prefix), source, file, line, function, log_level),
                  fmt);
         va_start(args, fmt);
-        vfprintf(stderr, log_buf, args);
+        vfprintf(stderr, log_ctx.log_buf, args);
         va_end(args);
     }
     unlock_mutex_if_it_needs(&log_ctx);
@@ -798,11 +796,11 @@ void log_raw(const char *source,
     {
         char prefix[128];
 
-        snprintf(log_buf,
-                 sizeof(log_buf),
+        snprintf(log_ctx.log_buf,
+                 sizeof(log_ctx.log_buf),
                  "%s\n",
                  compose_log_prefix(prefix, sizeof(prefix), source, file, line, function, LL_RAW));
-        fprintf(stderr,"%s",log_buf);
+        fprintf(stderr,"%s",log_ctx.log_buf);
         if (buffer)
         {
             for (i = 0; i < length; i+=16)
